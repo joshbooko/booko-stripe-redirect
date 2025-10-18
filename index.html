@@ -209,8 +209,6 @@
       </div>
     </div>
 
-    <div class="success-badge">✓ Stripe Setup Complete</div>
-
     <h1>Opening Booko App...</h1>
     <p class="subtitle">Your payment account is being set up</p>
 
@@ -236,15 +234,46 @@
   </div>
 
   <script>
+    // Construct the deep link
+    const deepLink = 'booko://booko.app/merchant_stripe_connect_return';
+    
     // Try to open the app immediately
-    window.location.href = 'booko://booko.app/merchant_stripe_connect_return';
+    function openApp() {
+      window.location.href = deepLink;
+    }
+    
+    // Attempt 1: Immediate redirect
+    openApp();
+    
+    // Attempt 2: Try again after a brief delay (for iOS)
+    setTimeout(openApp, 25);
+    
+    // Attempt 3: Try creating and clicking a hidden link (more reliable on some browsers)
+    setTimeout(function() {
+      const link = document.createElement('a');
+      link.href = deepLink;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 50);
 
-    // Show fallback after 2 seconds
+    // Show fallback button after 2 seconds
     setTimeout(function() {
       document.getElementById('loading-dots').style.display = 'none';
       document.getElementById('message').textContent = 'Tap the button below to return to Booko:';
       document.getElementById('fallback-link').style.display = 'inline-flex';
     }, 2000);
+    
+    // Make sure the fallback button works when clicked
+    document.getElementById('fallback-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      openApp();
+      
+      // Try multiple times in case first attempt fails
+      setTimeout(openApp, 100);
+      setTimeout(openApp, 300);
+    });
   </script>
 </body>
 </html>
