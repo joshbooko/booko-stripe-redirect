@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Returning to Booko...</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      opacity: 0.95;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 30px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 32px;
+      background: white;
+      color: #059669;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: transform 0.2s;
+    }
+    .button:hover {
+      transform: translateY(-2px);
+    }
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">✅</div>
+    <h1>Opening Booko App...</h1>
+    <p>Your Stripe Connect account setup is in progress. Stripe will verify your details within 3-5 business days.</p>
+    <div class="spinner" id="spinner"></div>
+    <p id="message">Redirecting you back to Booko...</p>
+    <a href="booko://booko.app/merchant_stripe_connect_return" class="button" id="fallback-link" style="display: none;">
+      Tap here if the app doesn't open
+    </a>
+  </div>
+
+  <script>
+    // Try to open the app immediately
+    window.location.href = 'booko://booko.app/merchant_stripe_connect_return';
+
+    // Show fallback after 2 seconds
+    setTimeout(function() {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('message').textContent = 'If the app didn\'t open automatically:';
+      document.getElementById('fallback-link').style.display = 'inline-block';
+    }, 2000);
+  </script>
+</body>
+</html>
