@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Close This Page</title>
+  <title>Booko - Application Submitted</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,8 +30,46 @@
       text-align: center;
     }
 
+    .logo-container {
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: #406117;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 4px 20px rgba(64, 97, 23, 0.15);
+    }
+
+    .logo-text {
+      color: #C7F269;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #406117;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .status-text {
+      font-size: 16px;
+      color: #57636C;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
     .instruction-text {
-      font-size: 20px;
+      font-size: 18px;
       color: #212529;
       line-height: 1.6;
       font-weight: 500;
@@ -46,16 +84,32 @@
     }
 
     @media (max-width: 480px) {
+      h1 {
+        font-size: 22px;
+      }
+
       .instruction-text {
-        font-size: 18px;
+        font-size: 16px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="logo-container">
+      <div class="logo">
+        <div class="logo-text">B</div>
+      </div>
+    </div>
+
+    <h1>Application Submitted</h1>
+    
+    <p class="status-text">
+      Your Stripe Connect application is being processed. You'll be notified once verification is complete.
+    </p>
+
     <p class="instruction-text">
-      Close this page by tapping the <span class="highlight">X</span> in the corner.
+      Tap the <span class="highlight">X</span> to return to Booko.
     </p>
   </div>
 </body>
