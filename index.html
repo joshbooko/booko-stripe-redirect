@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Returning to Booko...</title>
+  <title>Close This Page</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,250 +30,33 @@
       text-align: center;
     }
 
-    .logo-container {
-      margin-bottom: 32px;
-    }
-
-    .logo {
-      width: 120px;
-      height: 120px;
-      background: #406117;
-      border-radius: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto;
-      box-shadow: 0 4px 20px rgba(64, 97, 23, 0.15);
-    }
-
-    .logo-text {
-      color: #C7F269;
-      font-size: 48px;
-      font-weight: 700;
-      letter-spacing: -1px;
-    }
-
-    .success-badge {
-      background: #40FC6B;
-      color: #212529;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      display: inline-block;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: 30px;
-      font-weight: 700;
-      color: #406117;
-      margin-bottom: 12px;
-      line-height: 1.25;
-    }
-
-    .subtitle {
-      font-size: 18px;
-      color: #57636C;
-      line-height: 1.5;
-      margin-bottom: 32px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      border: 1px solid #E9ECEF;
-      margin-bottom: 24px;
-    }
-
-    .info-text {
-      font-size: 16px;
-      color: #57636C;
-      line-height: 1.75;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #E9ECEF;
-      border-top-color: #406117;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 24px auto;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 16px 32px;
-      background: #406117;
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 16px;
-      margin-top: 16px;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(64, 97, 23, 0.2);
-    }
-
-    .button:hover {
-      background: #2D4A0F;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(64, 97, 23, 0.25);
-    }
-
-    .button:active {
-      transform: translateY(0);
-    }
-
-    .icon-arrow {
+    .instruction-text {
       font-size: 20px;
+      color: #212529;
+      line-height: 1.6;
+      font-weight: 500;
     }
 
-    .message {
-      font-size: 14px;
-      color: #6C757D;
-      margin-top: 16px;
-    }
-
-    .timeline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin: 32px 0;
-    }
-
-    .timeline-dot {
-      width: 8px;
-      height: 8px;
-      background: #D2D2D2;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-
-    .timeline-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .timeline-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 0.3;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.2);
-        background: #406117;
-      }
+    .highlight {
+      color: #406117;
+      font-weight: 700;
+      background: rgba(64, 97, 23, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
     }
 
     @media (max-width: 480px) {
-      .logo {
-        width: 100px;
-        height: 100px;
-      }
-
-      .logo-text {
-        font-size: 40px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .subtitle {
-        font-size: 16px;
+      .instruction-text {
+        font-size: 18px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo-container">
-      <div class="logo">
-        <div class="logo-text">B</div>
-      </div>
-    </div>
-
-    <h1>Opening Booko App...</h1>
-    <p class="subtitle">Your payment account is being set up</p>
-
-    <div class="card">
-      <p class="info-text">
-        Stripe will verify your details within <strong>3-5 business days</strong>. 
-        We'll notify you once your account is activated and you can start accepting deposits.
-      </p>
-    </div>
-
-    <div class="timeline" id="loading-dots">
-      <div class="timeline-dot"></div>
-      <div class="timeline-dot"></div>
-      <div class="timeline-dot"></div>
-    </div>
-
-    <p class="message" id="message">Redirecting you back to the app...</p>
-
-    <a href="booko://booko.app/merchant_stripe_connect_return" class="button" id="fallback-link" style="display: none;">
-      <span>Open Booko App</span>
-      <span class="icon-arrow">→</span>
-    </a>
+    <p class="instruction-text">
+      Close this page by tapping the <span class="highlight">X</span> in the corner.
+    </p>
   </div>
-
-  <script>
-    // Construct the deep link
-    const deepLink = 'booko://booko.app/merchant_stripe_connect_return';
-    
-    // Try to open the app immediately
-    function openApp() {
-      window.location.href = deepLink;
-    }
-    
-    // Attempt 1: Immediate redirect
-    openApp();
-    
-    // Attempt 2: Try again after a brief delay (for iOS)
-    setTimeout(openApp, 25);
-    
-    // Attempt 3: Try creating and clicking a hidden link (more reliable on some browsers)
-    setTimeout(function() {
-      const link = document.createElement('a');
-      link.href = deepLink;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }, 50);
-
-    // Show fallback button after 2 seconds
-    setTimeout(function() {
-      document.getElementById('loading-dots').style.display = 'none';
-      document.getElementById('message').textContent = 'Tap the button below to return to Booko:';
-      document.getElementById('fallback-link').style.display = 'inline-flex';
-    }, 2000);
-    
-    // Make sure the fallback button works when clicked
-    document.getElementById('fallback-link').addEventListener('click', function(e) {
-      e.preventDefault();
-      openApp();
-      
-      // Try multiple times in case first attempt fails
-      setTimeout(openApp, 100);
-      setTimeout(openApp, 300);
-    });
-  </script>
 </body>
 </html>
