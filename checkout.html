@@ -29,6 +29,10 @@
       margin: 0 auto; 
     }
     #deposit-info {
+      padding: 0 4px 16px 4px;
+      margin-bottom: 8px;
+    }
+    #deposit-info.custom-deposit {
       padding: 20px;
       margin-bottom: 20px;
       border-radius: 16px;
@@ -45,9 +49,12 @@
     #deposit-icon {
       width: 20px;
       height: 20px;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
+    }
+    #deposit-info.custom-deposit #deposit-icon {
+      display: flex;
     }
     #deposit-icon svg {
       width: 16px;
@@ -241,16 +248,17 @@
     #button-helper.hidden {
       opacity: 0;
     }
-    /* Align Stripe legal copy (e.g., "By continuing...") */
+    /* Hide Stripe's default legal/terms text */
     #payment-element .TermsText,
     #payment-element .Terms,
     #payment-element .TermsCopy,
     #payment-element .Notice,
     #payment-element .Disclaimer,
-    #payment-element .FooterText {
-      font-size: 14px;
-      text-align: left;
-      line-height: 1.5;
+    #payment-element .FooterText,
+    #payment-element [class*="Terms"],
+    #payment-element [class*="Legal"],
+    #payment-element [class*="Footer"] {
+      display: none !important;
     }
   </style>
 </head>
@@ -320,8 +328,11 @@
     // Set conditional content
     let buttonText, loadingText, successText;
     
+    const depositInfo = document.getElementById("deposit-info");
+    
     if (isCustomDeposit) {
-      // Custom deposit - show amount in header
+      // Custom deposit - show amount in header with styled container
+      depositInfo.classList.add('custom-deposit');
       depositTypeLabel.innerText = "Deposit: £" + depositAmount;
       depositAmountEl.classList.add('hidden');
       depositDescription.style.display = 'none';
@@ -330,8 +341,8 @@
       loadingText = "Processing...";
       successText = "Deposit Paid";
     } else {
-      // Standard booking guarantee - no amount in header
-      depositTypeLabel.innerText = "Card details to confirm";
+      // Standard booking guarantee - simple header, no container styling
+      depositTypeLabel.innerText = "Provide card details to accept";
       depositAmountEl.classList.add('hidden');
       depositDescription.style.display = 'none';
       termsEl.innerText = "By providing your payment method, you authorise a Booking Guarantee hold of £" + depositAmount + ". No funds are taken now. You will only be charged this amount if you cancel less than 24 hours before your booking or fail to show up. For large parties, this deposit is transferred to the restaurant 24 hours after your event.";
@@ -413,6 +424,11 @@
       paymentMethodOrder: ["apple_pay", "google_pay", "card"],
       layout: {
         type: 'tabs'
+      },
+      terms: {
+        card: 'never',
+        applePay: 'never',
+        googlePay: 'never'
       },
       defaultValues: {
         billingDetails: {
