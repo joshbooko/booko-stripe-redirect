@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Booko Checkout</title>
+  <script src="https://js.stripe.com/v3"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      margin: 0; 
+      padding: 20px; 
+      background-color: #ffffff; 
+      font-family: 'Inter', sans-serif; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: flex-start; 
+      min-height: 100vh; 
+      box-sizing: border-box; 
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    #payment-wrapper { 
+      width: 100%; 
+      max-width: 500px; 
+      margin: 0 auto; 
+    }
+    #deposit-info {
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      border: 1px solid #d7e3c7;
+      background: linear-gradient(135deg, #f7faf3 0%, #ffffff 100%);
+      box-shadow: 0 4px 16px rgba(64, 97, 23, 0.08);
+    }
+    #deposit-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    #deposit-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #deposit-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: #406117;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .amount-label {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #0d1117;
+      text-transform: none;
+    }
+    .amount-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0d1117;
+      letter-spacing: -0.5px;
+    }
+    /* Hide amount-value for non-custom deposits (amount shown in terms) */
+    .amount-value.hidden {
+      display: none;
+    }
+    .amount-description {
+      font-size: 13px;
+      color: #57636C;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    #payment-element { 
+      width: 100%; 
+      margin-bottom: 20px; 
+    }
+    /* Payment method selection indicator */
+    #payment-status {
+      display: none;
+      background-color: rgba(64, 97, 23, 0.12); /* chip green with transparency */
+      border: 2px solid #406117;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #406117;
+    }
+    #payment-status.visible {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #payment-status .checkmark {
+      width: 20px;
+      height: 20px;
+      background-color: #406117;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #payment-status .checkmark svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #pay-button { 
+      width: 100%; 
+      background-color: #BDBDBD;
+      color: #757575; 
+      border: 2px solid #BDBDBD;
+      padding: 14px 20px; 
+      font-size: 16px; 
+      font-weight: 700;
+      cursor: not-allowed; 
+      border-radius: 8px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease-in-out;
+    }
+    #pay-button .padlock {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+    #pay-button:hover:not(:disabled) { 
+      background-color: #365915;
+      color: #ffffff;
+      border-color: #365915;
+    }
+    #pay-button:active:not(:disabled) {
+      background-color: #2b430f;
+      border-color: #2b430f;
+    }
+    #pay-button:disabled {
+      background-color: #cdd2c5 !important;
+      border-color: #cdd2c5 !important;
+      color: #7a7a7a !important;
+      cursor: not-allowed !important;
+    }
+    #pay-button:not(:disabled) {
+      background-color: #406117;
+      border-color: #406117;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    #pay-button.card-incomplete {
+      background-color: #d7dcd0 !important;
+      border-color: #d7dcd0 !important;
+      color: #7a7a7a !important;
+      box-shadow: none !important;
+    }
+    #pay-button.ready:not(:disabled) {
+      animation: pulse-ready 2s ease-in-out infinite;
+    }
+    @keyframes pulse-ready {
+      0% { box-shadow: 0 0 0 0 rgba(64, 97, 23, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(64, 97, 23, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(64, 97, 23, 0); }
+    }
+    #terms { 
+      font-size: 13px; 
+      color: #57636C; 
+      margin-top: 20px; 
+      text-align: left; 
+      line-height: 1.6;
+      padding: 0 4px;
+    }
+    #success-message { 
+      display: none; 
+      font-size: 24px; 
+      font-weight: 600;
+      color: #406117; 
+      text-align: center; 
+      margin-top: 20px; 
+    }
+    #error-message {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+    .spinner { 
+      border: 3px solid rgba(255, 255, 255, 0.3); 
+      border-top: 3px solid #ffffff; 
+      border-radius: 50%; 
+      width: 16px; 
+      height: 16px; 
+      animation: spin 1s linear infinite; 
+      display: inline-block; 
+      vertical-align: middle; 
+      margin-right: 8px; 
+    }
+    @keyframes spin { 
+      0% { transform: rotate(0deg); } 
+      100% { transform: rotate(360deg); } 
+    }
+    #redirecting-text {
+      font-size: 16px;
+      font-weight: 400;
+      color: #406117;
+      text-align: center;
+      margin-top: 10px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+    /* Helper text for button state */
+    #button-helper {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin-top: 8px;
+      transition: opacity 0.2s ease;
+    }
+    #button-helper.hidden {
+      opacity: 0;
+    }
+    /* Align Stripe legal copy (e.g., "By continuing...") */
+    #payment-element .TermsText,
+    #payment-element .Terms,
+    #payment-element .TermsCopy,
+    #payment-element .Notice,
+    #payment-element .Disclaimer,
+    #payment-element .FooterText {
+      font-size: 14px;
+      text-align: left;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div id="payment-wrapper">
+    <div id="deposit-info">
+      <div id="deposit-header">
+        <div id="deposit-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"/><path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"/></svg>
+        </div>
+        <span id="deposit-type-label" class="amount-label">Authorisation Hold</span>
+      </div>
+      <div id="deposit-amount" class="amount-value">£0.00</div>
+      <div id="deposit-description" class="amount-description"></div>
+    </div>
+    <div id="payment-element"></div>
+    <div id="payment-status">
+      <span class="checkmark">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </span>
+      <span id="payment-method-text">Payment method ready</span>
+    </div>
+    <div id="error-message"></div>
+    <button id="pay-button" disabled>
+      <span class="button-text">Confirm Booking</span>
+      <svg class="padlock" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"/>
+        <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="currentColor"/>
+      </svg>
+    </button>
+    <div id="button-helper">Complete card details above</div>
+    <div id="terms"></div>
+    <div id="success-message">
+      <div class="spinner" style="border: 3px solid #f3f3f3; border-top: 3px solid #406117; width: 32px; height: 32px; margin-bottom: 16px;"></div><br>
+      <span id="success-text">Hold Authorised</span>
+      <div id="redirecting-text">Please wait, redirecting...</div>
+    </div>
+  </div>
+  <script>
+    // Read URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientSecret = urlParams.get('client_secret') || '';
+    const userEmail = urlParams.get('email') || '';
+    const depositAmount = urlParams.get('amount') || '0.00';
+    const bookingType = urlParams.get('type') || 'wildcard'; // 'wildcard' or 'traditional'
+    const isCustomDeposit = urlParams.get('is_custom_deposit') === 'true';
+
+    // Validate required params
+    if (!clientSecret) {
+      document.getElementById('payment-wrapper').innerHTML = '<p style="color: red; text-align: center;">Missing client_secret parameter</p>';
+      throw new Error('Missing client_secret');
+    }
+
+    // Use production or test key based on client_secret prefix
+    const isLiveMode = clientSecret.startsWith('seti_') && !clientSecret.includes('_secret_');
+    const stripePublishableKey = "pk_test_51Qw9RnJuVNXBBuVFCkKNDWnUgU1zuDfDy1g2tEn63U6ftW8KaLmHNkuAS2NBzl6e8OnFrkFLFPwgwv34WdSKPUoW00oyazaFWM";
+    
+    const stripe = Stripe(stripePublishableKey);
+    
+    // Update deposit info based on booking type
+    const depositTypeLabel = document.getElementById("deposit-type-label");
+    const depositAmountEl = document.getElementById("deposit-amount");
+    const depositDescription = document.getElementById("deposit-description");
+    const termsEl = document.getElementById("terms");
+    const payButton = document.getElementById("pay-button");
+    
+    // Set conditional content
+    let buttonText, loadingText, successText;
+    
+    if (isCustomDeposit) {
+      // Custom deposit - show amount in header
+      depositTypeLabel.innerText = "Deposit: £" + depositAmount;
+      depositAmountEl.classList.add('hidden');
+      depositDescription.style.display = 'none';
+      termsEl.innerText = "To secure this booking, a Security Deposit of £" + depositAmount + " is required. By providing your payment method, you authorise this amount to be captured once the merchant confirms. This deposit is fully refundable if you cancel more than 24 hours in advance, but will otherwise be deducted from your final bill at the venue. Forfeited if you no-show or cancel late.";
+      buttonText = "Pay Deposit";
+      loadingText = "Processing...";
+      successText = "Deposit Paid";
+    } else {
+      // Standard booking guarantee - no amount in header
+      depositTypeLabel.innerText = "Card details to confirm";
+      depositAmountEl.classList.add('hidden');
+      depositDescription.style.display = 'none';
+      termsEl.innerText = "By providing your payment method, you authorise a Booking Guarantee hold of £" + depositAmount + ". No funds are taken now. You will only be charged this amount if you cancel less than 24 hours before your booking or fail to show up. For large parties, this deposit is transferred to the restaurant 24 hours after your event.";
+      buttonText = "Confirm Booking";
+      loadingText = "Confirming...";
+      successText = "Booking Confirmed";
+    }
+    
+    payButton.querySelector('.button-text').innerText = buttonText;
+
+    const appearance = {
+      theme: "none",
+      variables: { 
+        colorPrimary: '#406117',
+        colorBackground: '#ffffff', 
+        colorText: '#333333', 
+        spacingUnit: '4px', 
+        borderRadius: '8px',
+        fontFamily: '"Inter", sans-serif',
+      },
+      rules: {
+        ".Input": { 
+          backgroundColor: '#F2F2F2', 
+          border: '1px solid #E0E0E0', 
+          boxShadow: 'none',
+          padding: '10px 12px',
+        },
+        ".Input:focus": { 
+          border: '1px solid #406117',
+          boxShadow: '0 0 0 1px #406117'
+        },
+        ".Label": { 
+          color: '#333333',
+          fontWeight: '700',
+          marginBottom: '8px'
+        },
+        ".Tab": {
+          backgroundColor: '#f5f7f2',
+          border: '1px solid #d5ddc8',
+          borderRadius: '12px',
+          boxShadow: 'none',
+          padding: '12px 14px',
+          fontWeight: '700',
+          color: '#406117'
+        },
+        ".Tab:hover": {
+          borderColor: '#406117',
+          boxShadow: '0 0 0 2px #40611722'
+        },
+        ".Tab--selected": {
+          backgroundColor: '#406117',
+          color: '#ffffff',
+          borderColor: '#406117',
+          boxShadow: '0 0 0 2px #40611733'
+        },
+        ".TabIcon": {
+          color: '#406117',
+          fill: '#406117'
+        },
+        ".TabIcon--selected": {
+          color: '#ffffff',
+          fill: '#ffffff'
+        },
+        ".TabLabel": {
+          color: '#406117'
+        },
+        ".TabLabel--selected": {
+          color: '#ffffff'
+        }
+      }
+    };
+
+    const elements = stripe.elements({ clientSecret, appearance });
+    const paymentElement = elements.create("payment", {
+      wallets: {
+        applePay: "auto",
+        googlePay: "auto",
+      },
+      paymentMethodOrder: ["apple_pay", "google_pay", "card"],
+      layout: {
+        type: 'tabs'
+      },
+      defaultValues: {
+        billingDetails: {
+          email: userEmail,
+          address: {
+            postalCode: ''
+          }
+        }
+      }
+    });
+    paymentElement.mount("#payment-element");
+
+    // Track payment element state
+    let isPaymentReady = false;
+    const paymentStatus = document.getElementById("payment-status");
+    const paymentMethodText = document.getElementById("payment-method-text");
+    const buttonHelper = document.getElementById("button-helper");
+
+    // Listen for payment element changes
+    paymentElement.on('change', (event) => {
+      const paymentType = event.value?.type || '';
+      const isCardSelected = paymentType === 'card';
+      isPaymentReady = event.complete;
+      
+      payButton.disabled = !isPaymentReady;
+      payButton.classList.toggle('card-selected', isCardSelected);
+      payButton.classList.toggle('card-incomplete', isCardSelected && !event.complete);
+      
+      if (isPaymentReady) {
+        payButton.classList.add('ready');
+        buttonHelper.classList.add('hidden');
+        paymentStatus.classList.add('visible');
+        
+        switch(paymentType) {
+          case 'apple_pay':
+            paymentMethodText.textContent = 'Apple Pay ready';
+            break;
+          case 'google_pay':
+            paymentMethodText.textContent = 'Google Pay ready';
+            break;
+          case 'card':
+            paymentMethodText.textContent = 'Card details complete';
+            break;
+          default:
+            paymentMethodText.textContent = 'Payment method ready';
+        }
+      } else {
+        payButton.classList.remove('ready');
+        buttonHelper.classList.remove('hidden');
+        paymentStatus.classList.remove('visible');
+        
+        if (isCardSelected) {
+          paymentMethodText.textContent = 'Card selected';
+          buttonHelper.textContent = 'Complete card details above';
+        } else {
+          paymentMethodText.textContent = paymentType ? 'Payment method selected' : 'Payment method pending';
+          buttonHelper.textContent = 'Select a payment method above';
+        }
+      }
+    });
+
+    payButton.addEventListener("click", async () => {
+      const errorDiv = document.getElementById("error-message");
+      
+      // Prevent click if not ready
+      if (!isPaymentReady) return;
+      
+      payButton.disabled = true;
+      payButton.classList.remove('ready');
+      payButton.innerHTML = '<span class="spinner"></span><span class="button-text">' + loadingText + '</span>';
+      errorDiv.style.display = 'none';
+      buttonHelper.classList.add('hidden');
+
+      const { error, setupIntent } = await stripe.confirmSetup({ 
+        elements, 
+        redirect: "if_required" 
+      });
+
+      if (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+        payButton.disabled = false;
+        payButton.classList.add('ready');
+        const padlockSvg = '<svg class="padlock" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"/><path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="currentColor"/></svg>';
+        payButton.innerHTML = '<span class="button-text">' + buttonText + '</span>' + padlockSvg;
+        return;
+      }
+
+      document.getElementById("payment-element").style.display = "none";
+      payButton.style.display = "none";
+      paymentStatus.style.display = "none";
+      buttonHelper.style.display = "none";
+      document.getElementById("deposit-info").style.display = "none";
+      document.getElementById("terms").style.display = "none";
+      errorDiv.style.display = "none";
+      document.getElementById("success-message").style.display = "block";
+      document.getElementById("success-text").innerText = successText;
+      window.scrollTo(0, 0);
+
+      // Post message to parent (Flutter app)
+      window.parent.postMessage({ type: "SETUP_SUCCESS", setup_intent_id: setupIntent.id }, "*");
+      
+      // Also try webkit message handler for iOS
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.flutterHandler) {
+        window.webkit.messageHandlers.flutterHandler.postMessage(JSON.stringify({ type: "SETUP_SUCCESS", setup_intent_id: setupIntent.id }));
+      }
+    });
+  </script>
+</body>
+</html>
+
