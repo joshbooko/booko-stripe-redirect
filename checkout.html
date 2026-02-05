@@ -347,8 +347,15 @@
       depositDescription.style.display = 'none';
       termsEl.innerText = "By providing your payment method, you authorise a Booking Guarantee hold of £" + depositAmount + ". No funds are taken now. You will only be charged this amount if you cancel less than 24 hours before your booking or fail to show up. For large parties, this deposit is transferred to the restaurant 24 hours after your event.";
       buttonText = "Confirm Booking";
-      loadingText = "Confirming...";
-      successText = "Booking Confirmed";
+      
+      // Different loading/success text based on booking type
+      if (bookingType === 'wildcard') {
+        loadingText = "Requesting Wild Card";
+        successText = "Wild Card Requested";
+      } else {
+        loadingText = "Accepting Offer";
+        successText = "Offer Accepted";
+      }
     }
     
     payButton.querySelector('.button-text').innerText = buttonText;
