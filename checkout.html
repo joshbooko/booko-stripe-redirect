@@ -295,8 +295,9 @@
     const clientSecret = urlParams.get('client_secret') || '';
     const userEmail = urlParams.get('email') || '';
     const depositAmount = urlParams.get('amount') || '0.00';
-    const bookingType = urlParams.get('type') || 'wildcard'; // 'wildcard' or 'traditional'
-    const isCustomDeposit = urlParams.get('is_custom_deposit') === 'true';
+    const bookingType = urlParams.get('type') || 'wildcard'; // 'wildcard', 'traditional', or 'merchant_billing'
+    const isMerchantBilling = bookingType === 'merchant_billing';
+    const isCustomDeposit = !isMerchantBilling && urlParams.get('is_custom_deposit') === 'true';
 
     // Validate required params
     if (!clientSecret) {
@@ -316,13 +317,24 @@
     const depositDescription = document.getElementById("deposit-description");
     const termsEl = document.getElementById("terms");
     const payButton = document.getElementById("pay-button");
+    const buttonHelper = document.getElementById("button-helper");
     
     // Set conditional content
     let buttonText, loadingText, successText;
     
     const depositInfo = document.getElementById("deposit-info");
     
-    if (isCustomDeposit) {
+    if (isMerchantBilling) {
+      // Merchant billing card setup - dedicated flow (no booking terms/deposit copy)
+      depositInfo.classList.add('custom-deposit');
+      depositTypeLabel.innerText = "Add billing card";
+      depositAmountEl.classList.add('hidden');
+      depositDescription.style.display = 'none';
+      termsEl.innerText = "Your card will be saved for weekly performance fee billing. No charge is made today. You are charged only for completed bookings, with billing processed weekly.";
+      buttonText = "Save Billing Card";
+      loadingText = "Saving Billing Card";
+      successText = "Billing Card Saved";
+    } else if (isCustomDeposit) {
       // Custom deposit - show amount in header with styled container
       depositInfo.classList.add('custom-deposit');
       depositTypeLabel.innerText = "Deposit: £" + depositAmount;
@@ -351,6 +363,9 @@
     }
     
     payButton.querySelector('.button-text').innerText = buttonText;
+    buttonHelper.textContent = isMerchantBilling
+      ? 'Enter billing card details above'
+      : 'Complete card details above';
 
     const appearance = {
       theme: "none",
@@ -415,12 +430,7 @@
     };
 
     const elements = stripe.elements({ clientSecret, appearance });
-    const paymentElement = elements.create("payment", {
-      wallets: {
-        applePay: "auto",
-        googlePay: "auto",
-      },
-      paymentMethodOrder: ["apple_pay", "google_pay", "card"],
+    const paymentElementOptions = {
       layout: {
         type: 'tabs'
       },
@@ -437,14 +447,26 @@
           }
         }
       }
-    });
+    };
+
+    if (isMerchantBilling) {
+      // Billing setup should collect a reusable card only.
+      paymentElementOptions.paymentMethodOrder = ["card"];
+    } else {
+      paymentElementOptions.wallets = {
+        applePay: "auto",
+        googlePay: "auto",
+      };
+      paymentElementOptions.paymentMethodOrder = ["apple_pay", "google_pay", "card"];
+    }
+
+    const paymentElement = elements.create("payment", paymentElementOptions);
     paymentElement.mount("#payment-element");
 
     // Track payment element state
     let isPaymentReady = false;
     const paymentStatus = document.getElementById("payment-status");
     const paymentMethodText = document.getElementById("payment-method-text");
-    const buttonHelper = document.getElementById("button-helper");
 
     // Listen for payment element changes
     paymentElement.on('change', (event) => {
@@ -469,10 +491,14 @@
             paymentMethodText.textContent = 'Google Pay ready';
             break;
           case 'card':
-            paymentMethodText.textContent = 'Card details complete';
+            paymentMethodText.textContent = isMerchantBilling
+              ? 'Billing card ready'
+              : 'Card details complete';
             break;
           default:
-            paymentMethodText.textContent = 'Payment method ready';
+            paymentMethodText.textContent = isMerchantBilling
+              ? 'Billing card ready'
+              : 'Payment method ready';
         }
       } else {
         payButton.classList.remove('ready');
@@ -480,11 +506,15 @@
         paymentStatus.classList.remove('visible');
         
         if (isCardSelected) {
-          paymentMethodText.textContent = 'Card selected';
-          buttonHelper.textContent = 'Complete card details above';
+          paymentMethodText.textContent = isMerchantBilling ? 'Billing card selected' : 'Card selected';
+          buttonHelper.textContent = isMerchantBilling
+            ? 'Enter billing card details above'
+            : 'Complete card details above';
         } else {
           paymentMethodText.textContent = paymentType ? 'Payment method selected' : 'Payment method pending';
-          buttonHelper.textContent = 'Select a payment method above';
+          buttonHelper.textContent = isMerchantBilling
+            ? 'Enter billing card details above'
+            : 'Select a payment method above';
         }
       }
     });
