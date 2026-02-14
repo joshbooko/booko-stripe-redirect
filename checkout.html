@@ -333,7 +333,7 @@
       termsEl.innerText = "Your card will be saved for weekly performance fee billing. No charge is made today. You are charged only for completed bookings, with billing processed weekly.";
       buttonText = "Save Billing Card";
       loadingText = "Saving Billing Card";
-      successText = "Billing Card Saved";
+      successText = "Saving Billing Card";
     } else if (isCustomDeposit) {
       // Custom deposit - show amount in header with styled container
       depositInfo.classList.add('custom-deposit');
@@ -563,6 +563,14 @@
       // Also try webkit message handler for iOS
       if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.flutterHandler) {
         window.webkit.messageHandlers.flutterHandler.postMessage(JSON.stringify({ type: "SETUP_SUCCESS", setup_intent_id: setupIntent.id }));
+      }
+
+      if (isMerchantBilling) {
+        // Trigger in-app bottom-sheet close for merchant billing setup.
+        setTimeout(() => {
+          window.location.href = "booko://merchant-billing-success?setup_intent_id=" +
+            encodeURIComponent(setupIntent.id);
+        }, 250);
       }
     });
   </script>
