@@ -199,6 +199,7 @@
       font-size: 14px;
       margin-top: 10px;
       margin-bottom: 16px;
+      line-height: 1.4;
       text-align: center;
       display: none;
     }
@@ -538,7 +539,12 @@
       });
 
       if (error) {
-        errorDiv.textContent = error.message;
+        const rawErrorMessage = (error.message || '').trim();
+        const isCardDeclined =
+          error.code === 'card_declined' || /declined/i.test(rawErrorMessage);
+        errorDiv.textContent = isCardDeclined
+          ? 'Your card has been declined. Try a different card.'
+          : rawErrorMessage;
         errorDiv.style.display = 'block';
         payButton.disabled = false;
         payButton.classList.add('ready');
