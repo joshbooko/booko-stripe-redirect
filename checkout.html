@@ -307,10 +307,18 @@
       throw new Error('Missing client_secret');
     }
 
-    // Use production or test key based on client_secret prefix
-    const isLiveMode = clientSecret.startsWith('seti_') && !clientSecret.includes('_secret_');
-    const stripePublishableKey = "pk_test_51Qw9RnJuVNXBBuVFCkKNDWnUgU1zuDfDy1g2tEn63U6ftW8KaLmHNkuAS2NBzl6e8OnFrkFLFPwgwv34WdSKPUoW00oyazaFWM";
-    
+    // Use publishable key from URL when available (passed from backend),
+    // with test key fallback for local/dev safety.
+    const publishableKeyFromUrl = (urlParams.get('pk') || '').trim();
+    const fallbackTestPublishableKey = "pk_test_51Qw9RnJuVNXBBuVFCkKNDWnUgU1zuDfDy1g2tEn63U6ftW8KaLmHNkuAS2NBzl6e8OnFrkFLFPwgwv34WdSKPUoW00oyazaFWM";
+    const stripePublishableKey = publishableKeyFromUrl.startsWith('pk_')
+      ? publishableKeyFromUrl
+      : fallbackTestPublishableKey;
+
+    if (!publishableKeyFromUrl) {
+      console.warn('Checkout loaded without pk query param; using fallback test key.');
+    }
+
     const stripe = Stripe(stripePublishableKey);
     
     // Update deposit info based on booking type
