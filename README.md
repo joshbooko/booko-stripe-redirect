@@ -1,45 +1,30 @@
-# Stripe Connect Redirect Page
+# Booko Stripe Redirect Pages
 
-## What This Is
+Static pages hosted on `stripe.booko.deals` via GitHub Pages. Used by Stripe Connect onboarding and the Stripe checkout flow.
 
-This HTML file needs to be hosted on **booko.deals** to handle Stripe Connect redirects.
+## Pages
 
-When merchants complete Stripe onboarding, they'll be sent to:
-`https://booko.deals/merchant_stripe_connect_return`
+| Page | URL | Purpose |
+|:-----|:----|:--------|
+| `index.html` | `stripe.booko.deals` | Root fallback — directs merchants back to Booko |
+| `return/index.html` | `stripe.booko.deals/return` | Shown after Stripe form submission — confirms details are under review |
+| `refresh/index.html` | `stripe.booko.deals/refresh` | Shown when the Stripe session expired or was not completed |
+| `checkout.html` | `stripe.booko.deals/checkout.html` | Stripe Elements payment/card capture page used by the app |
 
-This page will automatically open the Booko app using the deep link `booko://`.
+## How it works
 
-## How to Deploy
+1. Merchant taps "Setup Payments" in the Booko app
+2. `create_stripe_account_link` edge function creates a Stripe account link with:
+   - `return_url` → `https://stripe.booko.deals/return`
+   - `refresh_url` → `https://stripe.booko.deals/refresh`
+3. Merchant completes or exits the Stripe form
+4. Stripe redirects to the appropriate page
+5. Merchant taps "X" to return to Booko
 
-Upload `index.html` to your booko.deals hosting at:
-- **Path**: `/merchant_stripe_connect_return/index.html`
-- **Full URL**: `https://booko.deals/merchant_stripe_connect_return`
+## Source of truth
 
-### If using Netlify:
-1. Create a folder named `merchant_stripe_connect_return`
-2. Put `index.html` inside it
-3. Upload to your booko.deals Netlify site
+These files are maintained in [`booko_platform/stripe_redirect_page/`](https://github.com/joshbooko/booko_platform). When updating, copy the contents of that folder here and push.
 
-### If using cPanel/FTP:
-1. Navigate to public_html (or www)
-2. Create folder `merchant_stripe_connect_return`
-3. Upload `index.html` inside it
+## Custom domain
 
-### If using Vercel/GitHub Pages:
-1. Add the folder to your repository
-2. Deploy
-
-## Testing
-
-After uploading, visit: `https://booko.deals/merchant_stripe_connect_return`
-
-You should see a nice page that tries to open the app.
-
-## That's It!
-
-Once this page is live, the Stripe Connect flow will work:
-1. User taps "Setup Payments" in app
-2. Stripe onboarding opens in browser
-3. User completes onboarding
-4. Stripe redirects to booko.deals
-5. Page opens the Booko app automatically
+The `CNAME` file points to `stripe.booko.deals`. DNS must have a CNAME record for `stripe` pointing to `joshbooko.github.io`.
